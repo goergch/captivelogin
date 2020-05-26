@@ -3,6 +3,8 @@ const puppeteer = require('puppeteer');
 const TICKET = process.env.IAC_TICKET
 const TICKET_PW = process.env.IAC_TICKET_PW
 const CRONTAB = (process.env.IAC_CRONTAB===undefined)?'*/1 * * * *':process.env.IAC_CRONTAB;
+
+const BROWSERPATH = process.env.BROWSERPATH
 console.log("Welcome to the IAC login")
 if(TICKET === undefined || TICKET_PW === undefined){
     console.log("IAC_TICKET or IAC_TICKET_PW is not set!!! Shuting down")
@@ -11,7 +13,17 @@ if(TICKET === undefined || TICKET_PW === undefined){
 var job = new CronJob(CRONTAB, function() {
     (async () => {
         console.log("Checking internet status...")
-        const browser = await puppeteer.launch();
+        browserOptions = {
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox'
+                ]
+        }
+        if (BROWSERPATH != null){
+            browserOptions["executablePath"] = BROWSERPATH
+        }
+        
+        const browser = await puppeteer.launch(browserOptions);
         const page = await browser.newPage();
         await page.goto('http://logon.now');
         await page.waitForNavigation({ waitUntil: 'networkidle0' })
